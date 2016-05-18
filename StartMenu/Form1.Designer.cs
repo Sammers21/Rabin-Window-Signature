@@ -41,7 +41,7 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(340, 302);
             this.button1.TabIndex = 0;
-            this.button1.Text = "У меня есть открытый ключ";
+            this.button1.Text = "Проверить подпись";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -53,7 +53,7 @@
             this.btnGoToRabin.Name = "btnGoToRabin";
             this.btnGoToRabin.Size = new System.Drawing.Size(340, 302);
             this.btnGoToRabin.TabIndex = 1;
-            this.btnGoToRabin.Text = "У меня есть закрытый ключ";
+            this.btnGoToRabin.Text = "Вычислить или проверить подпись";
             this.btnGoToRabin.UseVisualStyleBackColor = true;
             this.btnGoToRabin.Click += new System.EventHandler(this.button2_Click);
             // 
