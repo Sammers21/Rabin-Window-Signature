@@ -34,8 +34,8 @@ namespace Rabin_Window
             _imainForm.SetSymbolCount(0);
             _imainForm.SetByteCount(0);
 
-            _imainForm.FileSaveClick += ImainForm_FileSaveClick;
-            _imainForm.FileOpenClick += ImainForm_FileOpenClick;
+              _imainForm.FileSaveClick += ImainForm_FileSaveClick;
+             _imainForm.FileOpenClick += ImainForm_FileOpenClick;
             _imainForm.GoToMenuClick += ImainForm_GoToMenuClick;
             _imainForm.ContentChanged += ImainForm_ContentChanged;
             _imainForm.FileSaveAsClick += _imainForm_FileSaveAsClick;
@@ -48,7 +48,7 @@ namespace Rabin_Window
 
 
             _iopenkeyForm.GoToMenuClick += _iopenkeyForm_GoToMenuClick;
-            _iopenkeyForm.FileSaveAsClick += _iopenkeyForm_FileSaveAsClick;
+            _iopenkeyForm.FileСheckSignature += _iopenkeyForm_FileSaveAsClick;
             _iopenkeyForm.LoadOpneKeyFormFile += _iopenkeyForm_LoadOpneKeyFormFile;
             _iopenkeyForm.Close += CloseProg;
 
@@ -116,14 +116,18 @@ namespace Rabin_Window
 
         private void _iopenkeyForm_FileSaveAsClick(object sender, EventArgs e)
         {
-            string content = _iopenkeyForm.Content;
+
 
             _currentFilePath = _iopenkeyForm.path;
 
+            bool[] outputSign;
 
-            _manager.SaveContent(content, _currentFilePath, _iopenkeyForm.OpenKey);
 
-            _messageService.ShowMessage("Файл успешно сохранён");
+            string res = _manager.GetContent(_currentFilePath, _iopenkeyForm.OpenKey, out outputSign);
+
+            _iopenkeyForm.Content = res;
+
+            _messageService.ShowMessage(String.Format("В открытом файле приняты {0}/{1} подписей", outputSign.Where(p => p == true).ToArray().Length, outputSign.Length));
         }
 
         private void _iopenkeyForm_GoToMenuClick(object sender, EventArgs e)
@@ -151,7 +155,7 @@ namespace Rabin_Window
             _currentFilePath = _imainForm.FilePath;
 
 
-            _manager.SaveContent(content, _currentFilePath, _imainForm.SecretKeyOne * _imainForm.SecretKeyTwo);
+            _manager.SaveContent(content, _currentFilePath, _imainForm.SecretKeyOne, _imainForm.SecretKeyTwo);
 
             _messageService.ShowMessage("Файл успешно сохранён");
         }
@@ -189,13 +193,15 @@ namespace Rabin_Window
                 _currentFilePath = filepath;
 
 
-
-                string Content = _manager.GetContent(_currentFilePath, _imainForm.SecretKeyOne, _imainForm.SecretKeyTwo);
+                bool[] Signs;
+                string Content = _manager.GetContent(_currentFilePath, _imainForm.SecretKeyOne * _imainForm.SecretKeyTwo, out Signs);
 
                 int count = _manager.GetSymbloCount(Content);
 
                 _imainForm.Content = Content;
                 _imainForm.SetSymbolCount(count);
+                _messageService.ShowMessage(String.Format("В открытом файле приняты {0}/{1} подписей", Signs.Where(p => p == true).ToArray().Length, Signs.Length));
+
 
             }
             catch (Exception ex)
@@ -212,14 +218,15 @@ namespace Rabin_Window
 
         private void ImainForm_FileSaveClick(object sender, EventArgs e)
         {
-            try {
+            try
+            {
                 string content = _imainForm.Content;
 
-                _manager.SaveContent(content, _currentFilePath, _imainForm.SecretKeyOne * _imainForm.SecretKeyTwo);
+                _manager.SaveContent(content, _currentFilePath, _imainForm.SecretKeyOne, _imainForm.SecretKeyTwo);
 
                 _messageService.ShowMessage("Файл успешно сохранён");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _messageService.ShowError("Не возможно сохранить файл по текущему пути");
             }
