@@ -1,101 +1,145 @@
 ﻿using System;
 using RabinLib;
 using System.Numerics;
-using System.Diagnostics;
-using System.IO;
-namespace Testsomelibs
+
+namespace RabinTestConsole
 {
     class Program
     {
         static void Main(string[] args)
         {
+
             do
             {
-                try
+
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Введиет тестиремый реджим \n" +
+                "1- обычная демонстрация\n" +
+                "2- подпись Рабина\n" +
+                "3- модифицированная подпись Рабина\n");
+                Console.ForegroundColor = ConsoleColor.Green;
+
+                string Answer = Console.ReadLine();
+
+                switch (Answer)
                 {
-                    bool rx;
-                    do
-                    {
-                        var sw = new Stopwatch();
-
-                        string rs = "";
-                        for (int i = 0; i < 50; i++)
+                    case "1":
                         {
-                            rs += "9";
+
+                            Console.Clear();
+
+                            BigInteger p = 3004913, q = 20979403, n = p * q;
+
+
+                            Console.WriteLine("В данном случае используются p={0}\tq={1}", p, q);
+
+                            Console.WriteLine("Ведите текст для зашифровки\n");
+                            string text = Console.ReadLine();
+                            Console.WriteLine("\n");
+                            try
+                            {
+                                BigInteger[] arr = Rabin.EncryptionBigText(text, n);
+
+                                Console.WriteLine("\nBigInt Зашифрованное представление Массив :\n\n");
+                                foreach (BigInteger b in arr)
+                                {
+                                    Console.WriteLine("\t " + b);
+                                }
+                                Console.WriteLine("\n");
+                                string decrText = Rabin.DecryptionBigText(arr, p, q);
+
+
+                                Console.WriteLine("\n\n\nПри расшивровке было получено сообдещие:\n\n"
+                                     + decrText);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e.Message);
+                            }
+
                         }
-                        BigInteger k99 = BigInteger.Parse(rs);
-
-                        sw.Start();
-                        BigInteger rnd = Rabin.Rand(k99);
-
-                        rx = Rabin.Miller_Rabin_Test(rnd);
-
-                        sw.Stop();
-                        using (FileStream fs = new FileStream("KEYS50.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                        break;
+                    case "2":
                         {
-                            if (rx)
-                                Console.ForegroundColor = ConsoleColor.Green;
-                            else
-                                Console.ForegroundColor = ConsoleColor.Red;
-                            fs.Seek(fs.Length, SeekOrigin.Begin);
-                            Console.WriteLine(sw.Elapsed.TotalSeconds + "\t" + rx);
-                            Console.WriteLine("\n\n" + rnd + "\n");
-                            using (StreamWriter sww = new StreamWriter(fs))
+
+
+                            Console.Clear();
+
+                            Console.WriteLine("Ведите текст для зашифровки");
+
+                            string text = Console.ReadLine();
+
+
+                            BigInteger p = 3004913, q = 1109219;
+                            BigInteger n = p * q;
+
+                            Console.WriteLine("В данном случае используются p={0}\tq={1}", p, q);
+                            try
                             {
-                                sww.WriteLine(sw.Elapsed.TotalSeconds + "\t" + rx);
-                                sww.WriteLine("\n\n" + rnd + "\n");
+                                Signature[] S = Rabin.RabinSignatureBigtext(text, p, q);
+
+                                Console.WriteLine("\n");
+                                foreach (Signature numTe in S)
+                                    Console.WriteLine("Подпись S={0},I={1}", numTe.S, numTe.I);
+                                Console.WriteLine("\n");
+                                bool[] truestor;
+                                string dec = Rabin.DecryptionWithVertifBigText(S, n, out truestor);
+
+                                Console.WriteLine(dec);
+                                Console.WriteLine("\n");
+                                
+                                foreach(Boolean b in truestor)
+                                    Console.WriteLine(b);
                             }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e.Message);
+                            }
+
                         }
-                        if (rx)
+                        break;
+
+                    case "3":
                         {
-                            using (FileStream fs = new FileStream("KEYSTRUE50.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                            {
 
-                                fs.Seek(fs.Length, SeekOrigin.Begin);
-                                using (StreamWriter sww = new StreamWriter(fs))
-                                {
-                                    sww.WriteLine("\n" + sw.Elapsed.TotalSeconds + "\t" + rx + "\n");
-                                    sww.WriteLine("\n\n" + rnd + "\n");
-                                }
+                            Console.Clear();
+                            Console.WriteLine("Ведиет текст для зашифровки");
+                            string Text = Console.ReadLine();
+                            try
+                            {
+                                BigInteger p = 3795059, q = 3795007, n = q * p, SEcret = Rabin.CalcOfSecretKey(p, q);
+
+                                Console.WriteLine("Отрытый ключ n={0}  Secret key={1}", n, SEcret);
+
+                                BigInteger Sign = Rabin.ModifCalcSignatyre(Text, n, SEcret);
+                                Console.WriteLine("Подпись S= " + Sign);
+
+                                bool ans;
+                                string result = Rabin.DecryptSign(Sign, n, out ans);
+                                Console.WriteLine("Результат расшифровки " + result);
+                                Console.WriteLine("Подпись имеет значе " + ans);
+
+                                Console.ReadLine();
                             }
-                            if (BigInteger.ModPow(rnd, 1, 8) == 3)
+                            catch (Exception e)
                             {
-                                using (FileStream fs = new FileStream("KEYSTRUEMOD350.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                                {
 
-                                    fs.Seek(fs.Length, SeekOrigin.Begin);
-                                    using (StreamWriter sww = new StreamWriter(fs))
-                                    {
-                                        sww.WriteLine("\n" + sw.Elapsed.TotalSeconds + "\t" + rx + "\n");
-                                        sww.WriteLine("\n\n" + rnd + "\n");
-                                    }
-                                }
-                            }
-                            else if (BigInteger.ModPow(rnd, 1, 8) == 7)
-                            {
-                                using (FileStream fs = new FileStream("KEYSTRUEMOD750.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                                {
-
-                                    fs.Seek(fs.Length, SeekOrigin.Begin);
-                                    using (StreamWriter sww = new StreamWriter(fs))
-                                    {
-                                        sww.WriteLine("\n" + sw.Elapsed.TotalSeconds + "\t" + rx + "\n");
-                                        sww.WriteLine("\n\n" + rnd + "\n");
-                                    }
-                                }
+                                Console.WriteLine(e.Message);
+                                Console.WriteLine("\n Не забыайте что ключи должны быть дотстаточно большими");
                             }
                         }
-                    } while (!rx);
+                        break;
+                    default:
+                        Console.WriteLine("Не корректный ввод, попробуйте еще раз");
+                        break;
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+                Console.WriteLine("\n\nдля выхода нажимте Esc");
+            } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
 
-            } while (true);
+
 
         }
-
-
     }
+
 }
