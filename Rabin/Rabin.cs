@@ -15,7 +15,8 @@ namespace RabinLib
         /// </summary>
         static Random rnd = new Random();
 
-        #region Methods for Big text
+        #region Methods for Big text Rabin Classic System
+
         /// <summary>
         /// Метод для шифровки большого текста
         /// </summary>
@@ -26,15 +27,11 @@ namespace RabinLib
         {
             int size = (int)CalcylateByteSize(OpenyKey);
 
-
-
             byte[] textUTF8 = Encoding.UTF8.GetBytes(text);
-
-
-
 
             int cycleCount = (textUTF8.Length / size) + (textUTF8.Length % size == 0 ? 0 : 1);
             bool falgOK = cycleCount == (textUTF8.Length / size);
+
             BigInteger[] result = new BigInteger[cycleCount];
 
             int iteratoR = 0;
@@ -83,10 +80,6 @@ namespace RabinLib
                     bytelist.Add(by);
                 }
             }
-
-
-
-
             return Encoding.UTF8.GetString(bytelist.ToArray());
         }
 
@@ -95,7 +88,7 @@ namespace RabinLib
         /// </summary>
         /// <param name="Openkey">Открытый ключ</param>
         /// <returns>Размер максимального блока для шифрования</returns>
-      public  static BigInteger CalcylateByteSize(BigInteger Openkey)
+        public static BigInteger CalcylateByteSize(BigInteger Openkey)
         {
             BigInteger x = 256, bytecount = 1;
 
@@ -264,9 +257,85 @@ namespace RabinLib
 
         #endregion
 
+        #region Methods for Big text Rabin Signature System
+        /// <summary>
+        /// Метод для подписи большо теста
+        /// </summary>
+        /// <param name="text">Входящий текст</param>
+        /// <param name="p">Один из факторов закрытого ключа</param>
+        /// <param name="q">Один из факторов закрытого ключа</param>
+        /// <returns>Массив подписей текста</returns>
+        public static Signature[] RabinSignatureBigtext(string text, BigInteger p, BigInteger q)
+        {
+            BigInteger OpKey = p * q;
+
+            byte[] textUTF8 = Encoding.UTF8.GetBytes(text);
+
+            int size = (int)CalcylateByteSize(OpKey);
+
+            int cycleCount = (textUTF8.Length / size) + (textUTF8.Length % size == 0 ? 0 : 1);
+            bool falgOK = cycleCount == (textUTF8.Length / size);
+
+            Signature[] res = new Signature[cycleCount];
+
+            int iteratoR = 0;
+
+            for (int i = 0; i < cycleCount; i++)
+            {
+                int siZE = i == cycleCount - 1 ? falgOK ? size : (textUTF8.Length % size) : size;
+
+                List<byte> block = new List<byte>();
+
+                for (int j = 0; j < siZE; j++)
+                    block.Add(textUTF8[iteratoR++]);
+
+
+                res[i] = RabinSignatyre(block.ToArray(), p, q);
+
+            }
+
+            return res;
+
+        }
+        /// <summary>
+        /// Метод для проверки большого количества подписей
+        /// </summary>
+        /// <param name="sign">Массив подписей</param>
+        /// <param name="OpenKey">открыттый ключ</param>
+        /// <param name="TrueSign">Массив проверок подписей</param>
+        /// <returns></returns>
+        public static string DecryptionWithVertifBigText(Signature[] sign, BigInteger OpenKey, out bool[] TrueSign)
+        {
+            List<byte> resToDecode = new List<byte>();
+            List<bool> TrueSignatures = new List<bool>();
+
+            for (int i = 0; i < sign.Length; i++)
+            {
+                BigInteger M;
+
+                TrueSignatures.Add(SignatyreVertif(sign[i].S, sign[i].I, OpenKey, out M));
+
+                byte[] inh = ConvToBitFromBigInteger(M);
+                foreach (byte b in inh)
+                {
+                    resToDecode.Add(b);
+                }
+
+            }
+            TrueSign = TrueSignatures.ToArray();
+            return Encoding.UTF8.GetString(resToDecode.ToArray());
+          
+
+        }
+
+        #endregion
+
         #region Rabin Signatyre
         //Электронно цифровая подпись Рабина с Извлечением сообщения
-        //page158
+        //page158 Nabebin A.A.
+
+
+
 
         /// <summary>
         /// Вычисление подписи
@@ -276,7 +345,7 @@ namespace RabinLib
         /// <param name="q">Одни из закрытых ключей</param>
         /// <param name="II">Получаемый сдвиг</param>
         /// <returns>Получаемая подпись</returns>
-        public static BigInteger RabinSignatyre(string text, BigInteger p, BigInteger q, out BigInteger II)
+        public static Signature RabinSignatyre(string text, BigInteger p, BigInteger q)
         {
 
             if (!(Miller_Rabin_Test(q) && Miller_Rabin_Test(p)))
@@ -284,24 +353,49 @@ namespace RabinLib
 
             BigInteger OpenKey = p * q;
 
-
             BigInteger result = ConvToBigIntWithBit(text);
 
-
-
             result = MX(result);
-
-
-
 
             if (result > OpenKey)
                 throw new Exception("Слишком большое сообщение");
 
-            BigInteger s;
+            BigInteger s, II;
 
             funcR(result, p, q, out s, out II);
 
-            return s;
+            return new Signature(s, II);
+
+        }
+
+        /// <summary>
+        /// Вычисление подписи
+        /// </summary>
+        /// <param name="text">Подписываемый массив байт</param>
+        /// <param name="p">Однин из закрытых ключей</param>
+        /// <param name="q">Одни из закрытых ключей</param>
+        /// <param name="II">Получаемый сдвиг</param>
+        /// <returns>Получаемая подпись</returns>
+        public static Signature RabinSignatyre(byte[] ByteArr, BigInteger p, BigInteger q)
+        {
+
+            if (!(Miller_Rabin_Test(q) && Miller_Rabin_Test(p)))
+                throw new Exception("Один из ключей не простой");
+
+            BigInteger OpenKey = p * q;
+
+            BigInteger result = ConvToBigIntWithBit(ByteArr);
+
+            result = MX(result);
+
+            if (result > OpenKey)
+                throw new Exception("Слишком большое сообщение");
+
+            BigInteger s, II;
+
+            funcR(result, p, q, out s, out II);
+
+            return new Signature(s, II);
 
         }
 
@@ -309,17 +403,98 @@ namespace RabinLib
         /// Проверка подписи с извлечением сообщения
         /// </summary>
         /// <param name="OpenKey">Открытый ключ</param>
+        /// <param name="s">Подпись</param>
+        /// <returns>Результат извлечения сообщения </returns>
+        public static string DecryptionWithVertif(BigInteger OpenKey, Signature s, out bool TrueSignature)
+        {
+            return DecryptionWithVertif(OpenKey, s.S, s.I, out TrueSignature);
+        }
+        /// <summary>
+        /// Проверка подписи с извлечением сообщения
+        /// </summary>
+        /// <param name="OpenKey">Открытый ключ</param>
         /// <param name="S">Подпись</param>
         /// <param name="I">Сдвиг</param>
         /// <returns>Результат извлечения сообщения </returns>
-        public static string DecryptionWithVertif(BigInteger OpenKey, BigInteger S, BigInteger I)
+        public static string DecryptionWithVertif(BigInteger OpenKey, BigInteger S, BigInteger I, out bool TrueSignature)
         {
             BigInteger M;
-            if (SignatyreVertif(S, I, OpenKey, out M))
-            { }
-            else
-                throw new Exception("Подпись не принята");
+
+            TrueSignature = SignatyreVertif(S, I, OpenKey, out M);
+
             return (ConvToStringWithBit(M));
+        }
+
+        /// <summary>
+        /// Проверка подписи
+        /// </summary>
+        /// <param name="S">Подпись</param>
+        /// <param name="I">Сдвиг</param>
+        /// <param name="opKey">Открытый ключ</param>
+        /// <param name="?"></param>
+        /// <returns>True в случае удлевостворения подписи хеш-функции и false в обратном</returns>
+        static bool SignatyreVertif(BigInteger S, BigInteger I, BigInteger opKey, out BigInteger M)
+        {
+            BigInteger w = BigInteger.ModPow(S, 2, opKey);
+
+            BigInteger m = w - I;
+
+            List<string> lst = new List<string>() { m.ToString() };
+
+            List<string> analyzed = Analyze(lst);
+
+            if (analyzed.Count == 1)
+            {
+                m /= 100;
+                M = m;
+                return true;
+            }
+            else
+            {
+                M = 0;
+                return false;
+            }
+        }
+        /// <summary>
+        /// Вычисление сдвига и подписи
+        /// </summary>
+        /// <param name="m">Число для которого мы ищем ближешее имеющее квадратные вычеты</param>
+        /// <param name="p">Один из закртых ключей</param>
+        /// <param name="q">Один из закртых ключей</param>
+        /// <param name="S">Вычесленная подпись</param>
+        /// <param name="i">Сдвиг подписи</param>
+        static void funcR(BigInteger m, BigInteger p, BigInteger q, out BigInteger S, out BigInteger i)
+        {
+            BigInteger k = 0, n = p * q;
+
+            while (Jacobi(m + k, n) == -1 || Jacobi(m + k, p) == -1 || Jacobi(m + k, q) == -1)
+            {
+                k++;
+            }
+
+            m = m + k;
+
+            BigInteger r, _r;
+            BigInteger s, _s;
+            //step 1
+
+
+            Get_Sqare(out r, out _r, p, m);
+            //step 2
+            Get_Sqare(out s, out _s, q, m);
+
+
+            BigInteger D, c, d;
+            do
+            {
+                ShareAlgoryeOfEyclid(out D, out c, out d, p, q);
+            } while (D != 1);
+
+            BigInteger x = BigInteger.ModPow((r * d * q + s * c * p), 1, n);
+            while (x < 0)
+                x += n;
+            S = x;
+            i = k;
         }
 
         #endregion
@@ -438,14 +613,12 @@ namespace RabinLib
 
             byte[] data = Encoding.UTF8.GetBytes(Text);
 
-            for (int i = 0; i < data.Length; i++)
-            {
-                string rees = "";
-                if (i > 0)
-                    rees = i % 5 == 0 ? "\n" : "";
 
-            }
+            return ConvToBigIntWithBit(data);
+        }
 
+        static BigInteger ConvToBigIntWithBit(byte[] data)
+        {
 
             BigInteger res = 0;
 
@@ -456,7 +629,6 @@ namespace RabinLib
 
             return res;
         }
-
 
         /// <summary>
         /// преобразует число в массив байт
@@ -521,78 +693,8 @@ namespace RabinLib
 
         #region CoreMethods
 
-        /// <summary>
-        /// Проверка подписи
-        /// </summary>
-        /// <param name="S">Подпись</param>
-        /// <param name="I">Сдвиг</param>
-        /// <param name="opKey">Открытый ключ</param>
-        /// <param name="?"></param>
-        /// <returns>True в случае удлевостворения подписи хеш-функции и false в обратном</returns>
-        static bool SignatyreVertif(BigInteger S, BigInteger I, BigInteger opKey, out BigInteger M)
-        {
-            BigInteger w = BigInteger.ModPow(S, 2, opKey);
-
-            BigInteger m = w - I;
-
-            List<string> lst = new List<string>() { m.ToString() };
-
-            List<string> analyzed = Analyze(lst);
-
-            if (analyzed.Count == 1)
-            {
-                m /= 100;
-                M = m;
-                return true;
-            }
-            else
-            {
-                M = 0;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Вычисление сдвига и подписи
-        /// </summary>
-        /// <param name="m">Число для которого мы ищем ближешее имеющее квадратные вычеты</param>
-        /// <param name="p">Один из закртых ключей</param>
-        /// <param name="q">Один из закртых ключей</param>
-        /// <param name="S">Вычесленная подпись</param>
-        /// <param name="i">Сдвиг подписи</param>
-        static void funcR(BigInteger m, BigInteger p, BigInteger q, out BigInteger S, out BigInteger i)
-        {
-            BigInteger k = 0, n = p * q;
-
-            while (Jacobi(m + k, n) == -1 || Jacobi(m + k, p) == -1 || Jacobi(m + k, q) == -1)
-            {
-                k++;
-            }
-
-            m = m + k;
-
-            BigInteger r, _r;
-            BigInteger s, _s;
-            //step 1
 
 
-            Get_Sqare(out r, out _r, p, m);
-            //step 2
-            Get_Sqare(out s, out _s, q, m);
-
-
-            BigInteger D, c, d;
-            do
-            {
-                ShareAlgoryeOfEyclid(out D, out c, out d, p, q);
-            } while (D != 1);
-
-            BigInteger x = BigInteger.ModPow((r * d * q + s * c * p), 1, n);
-            while (x < 0)
-                x += n;
-            S = x;
-            i = k;
-        }
 
         /// <summary>
         /// Анализирует удлевотворяет ли сообщение хеш функции
@@ -959,7 +1061,7 @@ namespace RabinLib
 
         public static string GeneRateKey(int symbCount)
         {
-            bool rx=false;
+            bool rx = false;
 
 
             string rs = "";
