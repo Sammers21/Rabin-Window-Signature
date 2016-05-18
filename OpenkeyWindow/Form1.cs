@@ -24,7 +24,7 @@ namespace OpenkeyWindow
         void ShowForm();
         void SkipForm();
 
-        event EventHandler FileSaveAsClick;
+        event EventHandler FileСheckSignature;
         event EventHandler GoToMenuClick;
         event EventHandler LoadOpneKeyFormFile;
         event EventHandler Close;
@@ -94,7 +94,7 @@ namespace OpenkeyWindow
         }
 
 
-        public event EventHandler FileSaveAsClick;
+        public event EventHandler FileСheckSignature;
         public event EventHandler GoToMenuClick;
         public event EventHandler LoadOpneKeyFormFile;
         public event EventHandler Close;
@@ -102,7 +102,7 @@ namespace OpenkeyWindow
         #endregion
         public OpenKeyForm()
         {
-           
+
             InitializeComponent();
 
             BigInteger n = OpenKey, f;
@@ -155,16 +155,17 @@ namespace OpenkeyWindow
 
         private void butSave_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Подпись Рабина|*.rabinsignature";
 
-            saveFileDialog.Filter = "Текстовые файлы|*.txt|Все файлы|*.*";
-
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                path = saveFileDialog.FileName;
+                path = openFileDialog.FileName;
 
-                if (FileSaveAsClick != null)
-                    FileSaveAsClick(this, EventArgs.Empty);
+
+                if (FileСheckSignature != null)
+                    FileСheckSignature(this, EventArgs.Empty);
+
             }
         }
 

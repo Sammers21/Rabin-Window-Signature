@@ -129,7 +129,7 @@ namespace Rabin_Window
         private void btnChoose_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Текстовые файлы|*.txt|Все файлы|*.*";
+            openFileDialog.Filter = "Подпись Рабина|*.rabinsignature";
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -249,7 +249,7 @@ namespace Rabin_Window
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
 
-            saveFileDialog.Filter = "Текстовые файлы|*.txt|Все файлы|*.*";
+            saveFileDialog.Filter = "Подпись Рабина|*.rabinsignature";
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
