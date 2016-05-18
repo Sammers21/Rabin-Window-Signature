@@ -10,10 +10,10 @@ namespace Rabin_Window.BL
         bool isExist(string filepath);
         void SaveContent(string content, string filepath);
         string GetContent(string path);
-        string GetContent(string path, BigInteger SecretKeyOne, BigInteger SecretKeyTwo);
-        string GetContent(string path, Encoding encoding, BigInteger SecretKeyOne, BigInteger SecretKeyTwo);
-        void SaveContent(string content, string filepath, BigInteger OpenKey);
-        void SaveContent(string content, string filepath, Encoding encoding, BigInteger OpenKey);
+        string GetContent(string path, BigInteger OpenKey, out bool[] Signs);
+        string GetContent(string path, Encoding encoding, BigInteger OpenKey, out bool[] Signs);
+        void SaveContent(string content, string filepath, BigInteger p, BigInteger q);
+        void SaveContent(string content, string filepath, Encoding encoding, BigInteger p, BigInteger q);
         int GetSymbloCount(string content);
     }
 
@@ -26,36 +26,40 @@ namespace Rabin_Window.BL
             return File.Exists(filepath);
         }
 
-        public string GetContent(string path, BigInteger SecretKeyOne, BigInteger SecretKeyTwo)
+        public string GetContent(string path, BigInteger OpenKey, out bool[] Signs)
         {
-            return GetContent(path, _defaultEncoding, SecretKeyOne, SecretKeyTwo);
+            return GetContent(path, _defaultEncoding, OpenKey, out Signs);
         }
 
         public string GetContent(string path)
         {
-           return File.ReadAllText(path, _defaultEncoding);
+            return File.ReadAllText(path, _defaultEncoding);
         }
 
-        public string GetContent(string path, Encoding encoding, BigInteger SecretKeyOne, BigInteger SecretKeyTwo)
+        public string GetContent(string path, Encoding encoding, BigInteger OpenKey, out bool[] Signs)
         {
-            BigInteger[] conten = File.ReadAllLines(path, encoding).Select(p => BigInteger.Parse(p)).ToArray();
+            Signature[] conten = File.ReadAllLines(path, encoding).Select(p =>
+            {
+                BigInteger[] te = p.Split(' ').Select(F => BigInteger.Parse(F)).ToArray();
+                return new Signature(te[0], te[1]);
+            }).ToArray();
 
-            string result = Rabin.DecryptionBigText(conten, SecretKeyOne, SecretKeyTwo);
+            string result = Rabin.DecryptionWithVertifBigText(conten, OpenKey, out Signs);
 
             return result;
         }
 
-        public void SaveContent(string content, string filepath, BigInteger OpenKey)
+        public void SaveContent(string content, string filepath, BigInteger p, BigInteger q)
         {
-            SaveContent(content, filepath, _defaultEncoding, OpenKey);
+            SaveContent(content, filepath, _defaultEncoding, p, q);
         }
 
-        public void SaveContent(string content, string filepath, Encoding encoding, BigInteger OpenKey)
+        public void SaveContent(string content, string filepath, Encoding encoding, BigInteger p, BigInteger q)
         {
-            BigInteger[] EncrypArr = Rabin.EncryptionBigText(content, OpenKey);
+            Signature[] EncrypArr = Rabin.RabinSignatureBigtext(content, p, q);
 
 
-            string[] res = EncrypArr.Select(p => p + "").ToArray();
+            string[] res = EncrypArr.Select(P => P.S + " " + P.I).ToArray();
 
             File.WriteAllLines(filepath, res, encoding);
 
@@ -63,7 +67,7 @@ namespace Rabin_Window.BL
 
         public void SaveContent(string content, string filepath)
         {
-            File.WriteAllText(filepath, content,_defaultEncoding);
+            File.WriteAllText(filepath, content, _defaultEncoding);
         }
 
         public int GetSymbloCount(string content)
