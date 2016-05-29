@@ -224,7 +224,7 @@ namespace Rabin_Window
 
                 _manager.SaveContent(content, _currentFilePath, _imainForm.SecretKeyOne, _imainForm.SecretKeyTwo);
 
-                _messageService.ShowMessage("Файл успешно сохранён");
+                _messageService.ShowMessage("Фаил с подписью успешно сохранён");
             }
             catch (Exception ex)
             {

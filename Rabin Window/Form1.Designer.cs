@@ -88,9 +88,9 @@
             this.lblSecretKey1.AutoSize = true;
             this.lblSecretKey1.Location = new System.Drawing.Point(320, 28);
             this.lblSecretKey1.Name = "lblSecretKey1";
-            this.lblSecretKey1.Size = new System.Drawing.Size(96, 13);
+            this.lblSecretKey1.Size = new System.Drawing.Size(98, 13);
             this.lblSecretKey1.TabIndex = 4;
-            this.lblSecretKey1.Text = "Закрытый ключ 1";
+            this.lblSecretKey1.Text = "Закрытый ключ Q";
             // 
             // label2
             // 
@@ -99,9 +99,9 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(686, 28);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(96, 13);
+            this.label2.Size = new System.Drawing.Size(97, 13);
             this.label2.TabIndex = 5;
-            this.label2.Text = "Закрытый ключ 2";
+            this.label2.Text = "Закрытый ключ P";
             // 
             // butSave
             // 
@@ -258,7 +258,7 @@
             this.MinimumSize = new System.Drawing.Size(810, 360);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Rabin Window";
+            this.Text = "Окно вычисления и проверки подписи";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
